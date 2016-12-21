@@ -6,15 +6,15 @@
 </description>
     <link>http://xWIDL.github.io/</link>
     <atom:link href="http://xWIDL.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 21 Dec 2016 20:06:43 +0800</pubDate>
-    <lastBuildDate>Wed, 21 Dec 2016 20:06:43 +0800</lastBuildDate>
+    <pubDate>Wed, 21 Dec 2016 20:21:19 +0800</pubDate>
+    <lastBuildDate>Wed, 21 Dec 2016 20:21:19 +0800</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
     
       <item>
-        <title>项目进展</title>
+        <title>项目进展 I</title>
         <description>&lt;p&gt;项目进展不足，拖延有余。&lt;/p&gt;
 
-&lt;p&gt;目前我已经了解了 Scala 的基本用法和 SAFE 2.0 的源代码结构。总体来说 generality 还是比较高的。&lt;/p&gt;
+&lt;p&gt;目前我已经了解了 Scala 的基本用法和 SAFE 2.0 的源代码结构。总体来说 SAFE 新版的 generality 还是比较高的。&lt;/p&gt;
 
 &lt;h2 id=&quot;一个有趣的问题&quot;&gt;一个有趣的问题&lt;/h2&gt;
 &lt;p&gt;safe 如果不手动通过选项指定 context-sensitivity，则 k （CFA 的 call limit）默认为 0。也就是说，每个 call-site 都会在函数 exit edge 的 propagation 目标里面。简单来说，就是每次分析一个调用，以前的调用点的调用完成后 state 都会受到影响。这样不仅仅不精确，而且效率非常差（quaradic）。比如下面的程序：&lt;/p&gt;
@@ -96,25 +96,29 @@ Pos     Zero    Neg
 
 &lt;p&gt;进入 &lt;code class=&quot;highlighter-rouge&quot;&gt;C&lt;/code&gt; 中，可以找到 &lt;code class=&quot;highlighter-rouge&quot;&gt;call: Call =&amp;gt; CI(cp, call.callInst, st, AbsState.Bot)&lt;/code&gt; ，于是便找到了处理函数调用的 &lt;code class=&quot;highlighter-rouge&quot;&gt;CI&lt;/code&gt;。&lt;code class=&quot;highlighter-rouge&quot;&gt;CI&lt;/code&gt; 比较复杂，要为每一个这个名字可能指向的函数（论 points-to analysis 的重要性）加入新的 call edge。&lt;/p&gt;
 
-&lt;p&gt;这里我们知道关键在于 &lt;code class=&quot;highlighter-rouge&quot;&gt;getFunc&lt;/code&gt; 是怎么工作的。每个函数，不管是 built-in 还是 user space，都可以看作一个 callable-objects，所以通过名字得到 locset 之后，还要进一步通过 abstract heap 映射得到 abstract object, 但是这个 object 是抽象的 – 又可以代表很多 function，所以进一步对每个 &lt;code class=&quot;highlighter-rouge&quot;&gt;fid&lt;/code&gt; 去分析。&lt;/p&gt;
+&lt;p&gt;这里我们知道关键在于 &lt;code class=&quot;highlighter-rouge&quot;&gt;getFunc&lt;/code&gt; 是怎么工作的。每个函数，不管是 built-in 还是 user space，都可以看作一个 callable object，所以通过名字得到 location set 之后，还要进一步通过 abstract heap 映射得到 abstract object, 但是这个 object 是抽象的 – 又可以代表很多 function，所以进一步对每个 &lt;code class=&quot;highlighter-rouge&quot;&gt;fid&lt;/code&gt; 去分析。&lt;/p&gt;
 
 &lt;h2 id=&quot;目前修改的部分&quot;&gt;目前修改的部分&lt;/h2&gt;
 
 &lt;p&gt;目前已经加入的部分是：&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Interface&lt;/code&gt; 和相关的 xWIDL 抽象语法树，不完全，但每个节点都实现了输出成 Dafny 的对应实现的翻译部分&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;ObjBuilder&lt;/code&gt; – 通过接口定义检查函数调用情况
+  &lt;li&gt;&lt;a href=&quot;https://github.com/xWIDL/safe/tree/xwidl-tree/src/main/scala/kr/ac/kaist/safe/xwidl/spec&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Interface&lt;/code&gt; 和相关的 xWIDL 抽象语法树&lt;/a&gt;：不完全，但每个节点都实现了输出成 Dafny 的对应实现的翻译部分&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/xWIDL/safe/blob/xwidl-tree/src/main/scala/kr/ac/kaist/safe/xwidl/checker/ObjBuilder.scala&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;ObjBuilder&lt;/code&gt;&lt;/a&gt; – 通过接口定义检查函数调用情况
     &lt;ul&gt;
       &lt;li&gt;已经可以检查类型和参数数目的问题&lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;XWIDLCode&lt;/code&gt; – 类似 &lt;code class=&quot;highlighter-rouge&quot;&gt;PureCode&lt;/code&gt;，但是包装的是基于接口定义检查函数&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;askDafny&lt;/code&gt; – 与 Dafny 的通信模块&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;PPrint&lt;/code&gt; – 根据 &lt;em&gt;A Prettier Printer&lt;/em&gt; 在 Scala 中重新实现的 pretty printing combinator 库&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;XWIDLCode&lt;/code&gt;&lt;/a&gt; – 类似 &lt;code class=&quot;highlighter-rouge&quot;&gt;PureCode&lt;/code&gt;，但是包装的是基于接口定义检查函数&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/xWIDL/safe/blob/xwidl-tree/src/main/scala/kr/ac/kaist/safe/xwidl/dafny/askDafny.scala&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;askDafny&lt;/code&gt;&lt;/a&gt; – 与 Dafny 的通信模块&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/xWIDL/safe/blob/xwidl-tree/src/main/scala/kr/ac/kaist/safe/xwidl/pprint/PPrint.scala&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;PPrint&lt;/code&gt;&lt;/a&gt; – 根据 &lt;em&gt;A Prettier Printer&lt;/em&gt; 在 Scala 中重新实现的 pretty printing combinator 库&lt;/li&gt;
+  &lt;li&gt;散落在各个抽象值定义中的 concretization 为 expression 的过程，如 &lt;a href=&quot;https://github.com/xWIDL/safe/blob/xwidl-tree/src/main/scala/kr/ac/kaist/safe/analyzer/domain/AbsBool.scala#L20&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;AbsBool.pack&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;用 Declarative 的 Interface Spec 来重写原有的 &lt;a href=&quot;https://github.com/xWIDL/safe/blob/xwidl-tree/src/main/scala/kr/ac/kaist/safe/analyzer/models/builtin/BuiltinMath.scala&quot;&gt;Math&lt;/a&gt; 定义&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;一些简单的函数，如 &lt;code class=&quot;highlighter-rouge&quot;&gt;Math.abs&lt;/code&gt;，已经可以生成靠谱的 Dafny 代码。&lt;/p&gt;
+
+&lt;p&gt;有趣的一点是，相比我在 TAJS 开发原型时的”完全替代”，这次通过一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;optSem&lt;/code&gt; 可以保留对函数抽象语义建模的选项（相比 SMT 求解更高效），但是由于已经做过 generalized type checking，所以实现起来 boilerplates 更少。&lt;/p&gt;
 
 &lt;p&gt;下一步计划：&lt;/p&gt;
 
