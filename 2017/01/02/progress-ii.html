@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>项目进展 II</title>
+  <meta name="description" content="State in SAFEOOP 的核心是状态，SAFE 是如何实现这一点的呢？">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://xWIDL.github.io/2017/01/02/progress-ii.html">
+  <link rel="alternate" type="application/rss+xml" title="xWIDL" href="http://xWIDL.github.io/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">xWIDL</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+          <a class="page-link" href="/about/">About</a>
+          
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">项目进展 II</h1>
+    <p class="post-meta"><time datetime="2017-01-02T00:00:00+08:00" itemprop="datePublished">Jan 2, 2017</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="state-in-safe">State in SAFE</h2>
+<p>OOP 的核心是状态，SAFE 是如何实现这一点的呢？</p>
+
+<ul>
+  <li><code class="highlighter-rouge">AbsState</code>
+    <ul>
+      <li><code class="highlighter-rouge">AbsHeap</code>: <code class="highlighter-rouge">Map[Loc -&gt; AbsObject]</code></li>
+      <li><code class="highlighter-rouge">AbsContext</code>: <code class="highlighter-rouge">Map[Loc -&gt; AbsLexEnv]</code> in which <code class="highlighter-rouge">AbsLexEnv</code> is implemented with <code class="highlighter-rouge">(AbsDecEnvRec, AbsGlobalEnvRec, outer: AbsLoc)</code>, the first two <code class="highlighter-rouge">Env</code> are essentially <code class="highlighter-rouge">Map[String, AbsBinding]</code></li>
+    </ul>
+  </li>
+</ul>
+
+<p>Consider some primitive instructions (NOTE: they are more abstract forms of <code class="highlighter-rouge">CFGNormalInst</code>, with expression arguments mostly presented in an already evaluated form):</p>
+
+<ol>
+  <li>Allocate a new object <code class="highlighter-rouge">CFGAlloc(x, proto, addr)</code>
+    <ul>
+      <li>prototype object <code class="highlighter-rouge">proto</code> is from getting the <code class="highlighter-rouge">prototype</code> field from the function object, for example, <code class="highlighter-rouge">Array.prototype</code></li>
+      <li><code class="highlighter-rouge">x: CFGId</code> is the left hand side variable to bind the location</li>
+      <li><code class="highlighter-rouge">addr: Address</code> is the allocated address (XXX: Why it is given explicitly?)</li>
+      <li>The prototype object, in its RHS form, is in fact a <code class="highlighter-rouge">LocSet</code>. Why? Think about <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Inheritance_and_the_prototype_chain">the prototype chain</a>, the newly created instance <em>inherits</em> certain prototype by forming a link to it.</li>
+      <li>Now, we update the heap with a new location pointing to a <code class="highlighter-rouge">AbsObject.newObject(protoLocSet)</code>, and binding <code class="highlighter-rouge">x</code> to this location</li>
+    </ul>
+  </li>
+  <li>Modify an object’s state <code class="highlighter-rouge">CFGStore(obj, index, rhs)</code>
+    <ul>
+      <li>This is just <code class="highlighter-rouge">set</code> (<code class="highlighter-rouge">obj[index] &lt;- rhs</code>), and trivially we can also know about <code class="highlighter-rouge">get</code></li>
+      <li>consider each of the <em>set</em> of abstract strings that <code class="highlighter-rouge">index</code> represents, we will do store for each of them</li>
+      <li>Now differentiate the <em>set</em> of abstract objects that <code class="highlighter-rouge">obj</code> represents into no-array and array ones, and for each of them, we will do corresponding store using <code class="highlighter-rouge">propStore</code> or <code class="highlighter-rouge">arrayIdxStore</code>.</li>
+    </ul>
+  </li>
+</ol>
+
+<h2 id="oop-in-safe">OOP in SAFE</h2>
+
+<h2 id="a-new-idea">A new idea</h2>
+<p>Now I am considering another dimension of design to solve the efficiency and state binding problem.</p>
+
+<h2 id="todo-in-next-issue">TODO in next issue</h2>
+
+<ul>
+  <li>Recency abstraction in SAFE</li>
+</ul>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">xWIDL</h2> -->
+
+    <div class="footer-col-wrapper">
+<!--       <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>xWIDL</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div> -->
+
+      <div class="footer-col">
+        <p>xWIDL is the eXtended WebIDL to support deep and modular API misuse checking.
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -6,9 +6,62 @@
 </description>
     <link>http://xWIDL.github.io/</link>
     <atom:link href="http://xWIDL.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 21 Dec 2016 20:33:16 +0800</pubDate>
-    <lastBuildDate>Wed, 21 Dec 2016 20:33:16 +0800</lastBuildDate>
+    <pubDate>Mon, 02 Jan 2017 14:23:19 +0800</pubDate>
+    <lastBuildDate>Mon, 02 Jan 2017 14:23:19 +0800</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
+    
+      <item>
+        <title>项目进展 II</title>
+        <description>&lt;h2 id=&quot;state-in-safe&quot;&gt;State in SAFE&lt;/h2&gt;
+&lt;p&gt;OOP 的核心是状态，SAFE 是如何实现这一点的呢？&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;AbsState&lt;/code&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;AbsHeap&lt;/code&gt;: &lt;code class=&quot;highlighter-rouge&quot;&gt;Map[Loc -&amp;gt; AbsObject]&lt;/code&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;AbsContext&lt;/code&gt;: &lt;code class=&quot;highlighter-rouge&quot;&gt;Map[Loc -&amp;gt; AbsLexEnv]&lt;/code&gt; in which &lt;code class=&quot;highlighter-rouge&quot;&gt;AbsLexEnv&lt;/code&gt; is implemented with &lt;code class=&quot;highlighter-rouge&quot;&gt;(AbsDecEnvRec, AbsGlobalEnvRec, outer: AbsLoc)&lt;/code&gt;, the first two &lt;code class=&quot;highlighter-rouge&quot;&gt;Env&lt;/code&gt; are essentially &lt;code class=&quot;highlighter-rouge&quot;&gt;Map[String, AbsBinding]&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Consider some primitive instructions (NOTE: they are more abstract forms of &lt;code class=&quot;highlighter-rouge&quot;&gt;CFGNormalInst&lt;/code&gt;, with expression arguments mostly presented in an already evaluated form):&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Allocate a new object &lt;code class=&quot;highlighter-rouge&quot;&gt;CFGAlloc(x, proto, addr)&lt;/code&gt;
+    &lt;ul&gt;
+      &lt;li&gt;prototype object &lt;code class=&quot;highlighter-rouge&quot;&gt;proto&lt;/code&gt; is from getting the &lt;code class=&quot;highlighter-rouge&quot;&gt;prototype&lt;/code&gt; field from the function object, for example, &lt;code class=&quot;highlighter-rouge&quot;&gt;Array.prototype&lt;/code&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;x: CFGId&lt;/code&gt; is the left hand side variable to bind the location&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;addr: Address&lt;/code&gt; is the allocated address (XXX: Why it is given explicitly?)&lt;/li&gt;
+      &lt;li&gt;The prototype object, in its RHS form, is in fact a &lt;code class=&quot;highlighter-rouge&quot;&gt;LocSet&lt;/code&gt;. Why? Think about &lt;a href=&quot;https://developer.mozilla.org/en/docs/Web/JavaScript/Inheritance_and_the_prototype_chain&quot;&gt;the prototype chain&lt;/a&gt;, the newly created instance &lt;em&gt;inherits&lt;/em&gt; certain prototype by forming a link to it.&lt;/li&gt;
+      &lt;li&gt;Now, we update the heap with a new location pointing to a &lt;code class=&quot;highlighter-rouge&quot;&gt;AbsObject.newObject(protoLocSet)&lt;/code&gt;, and binding &lt;code class=&quot;highlighter-rouge&quot;&gt;x&lt;/code&gt; to this location&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Modify an object’s state &lt;code class=&quot;highlighter-rouge&quot;&gt;CFGStore(obj, index, rhs)&lt;/code&gt;
+    &lt;ul&gt;
+      &lt;li&gt;This is just &lt;code class=&quot;highlighter-rouge&quot;&gt;set&lt;/code&gt; (&lt;code class=&quot;highlighter-rouge&quot;&gt;obj[index] &amp;lt;- rhs&lt;/code&gt;), and trivially we can also know about &lt;code class=&quot;highlighter-rouge&quot;&gt;get&lt;/code&gt;&lt;/li&gt;
+      &lt;li&gt;consider each of the &lt;em&gt;set&lt;/em&gt; of abstract strings that &lt;code class=&quot;highlighter-rouge&quot;&gt;index&lt;/code&gt; represents, we will do store for each of them&lt;/li&gt;
+      &lt;li&gt;Now differentiate the &lt;em&gt;set&lt;/em&gt; of abstract objects that &lt;code class=&quot;highlighter-rouge&quot;&gt;obj&lt;/code&gt; represents into no-array and array ones, and for each of them, we will do corresponding store using &lt;code class=&quot;highlighter-rouge&quot;&gt;propStore&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;arrayIdxStore&lt;/code&gt;.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;oop-in-safe&quot;&gt;OOP in SAFE&lt;/h2&gt;
+
+&lt;h2 id=&quot;a-new-idea&quot;&gt;A new idea&lt;/h2&gt;
+&lt;p&gt;Now I am considering another dimension of design to solve the efficiency and state binding problem.&lt;/p&gt;
+
+&lt;h2 id=&quot;todo-in-next-issue&quot;&gt;TODO in next issue&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Recency abstraction in SAFE&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 02 Jan 2017 00:00:00 +0800</pubDate>
+        <link>http://xWIDL.github.io/2017/01/02/progress-ii.html</link>
+        <guid isPermaLink="true">http://xWIDL.github.io/2017/01/02/progress-ii.html</guid>
+        
+        
+      </item>
     
       <item>
         <title>项目进展 I</title>
