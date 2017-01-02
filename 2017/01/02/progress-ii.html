@@ -95,16 +95,64 @@
   </li>
 </ol>
 
-<h2 id="oop-in-safe">OOP in SAFE</h2>
+<h2 id="oo-in-safe">OO in SAFE</h2>
+<p>JS is an prototype-based OO language. This is also crucial to our modeling.</p>
+
+<p>Let’s consider some examples first.</p>
+
+<p><code class="highlighter-rouge">var x = new ClsX();</code> will be compiled to SAFE intermediate repr (using <code class="highlighter-rouge">cfgBuild</code> flag):</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>&lt;&gt;fun&lt;&gt;1 := @ToObject(ClsX) @ #1
+&lt;&gt;arguments&lt;&gt;2 := allocArg(0) @ #2
+&lt;&gt;proto&lt;&gt;3 := &lt;&gt;fun&lt;&gt;1["prototype"]
+&lt;&gt;obj&lt;&gt;4 := alloc(&lt;&gt;proto&lt;&gt;3) @ #3
+construct(&lt;&gt;fun&lt;&gt;1, &lt;&gt;obj&lt;&gt;4, &lt;&gt;arguments&lt;&gt;2) @ #4
+</code></pre>
+</div>
+
+<p>A more readable version is</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>fClsX       := @ToObject(ClsX)
+args        := allocArg(0)
+protoClsX   := fClsX.prototype
+obj         := alloc(protoClsX)
+
+construct(fClsX, obj, args)
+</code></pre>
+</div>
+
+<p>Assuming you understand the prototype-based OO mechanism in JS, let’s investigate into the following issues directly:</p>
+
+<ul>
+  <li>Where does <code class="highlighter-rouge">ClsX</code> exist? How to create it? (Since it looks global), how to load it into the default global environment?
+    <ul>
+      <li><code class="highlighter-rouge">@ToObject</code> is an internal API call (<code class="highlighter-rouge">IC</code>), whose expression argument will be first forwarded to e<code class="highlighter-rouge">V</code>aluate and then try to coerce it to <code class="highlighter-rouge">AbsObject</code></li>
+      <li>Since is a <em>function</em> object, we create it with <code class="highlighter-rouge">FuncModel</code>, which has a member called <code class="highlighter-rouge">protoModel</code> and a member called <code class="highlighter-rouge">construct</code>. We need to provide both</li>
+      <li>To load it, just modify the value of <code class="highlighter-rouge">BuiltInGlobal</code> object</li>
+    </ul>
+  </li>
+  <li>How is <code class="highlighter-rouge">prototype</code> created? How is it bound to the (constructor) function?
+    <ul>
+      <li>Prototype is also an object, but with an emphasize on OO, we will consider how can its operations manipulate the <code class="highlighter-rouge">this</code> state. This is done by a <code class="highlighter-rouge">SystemAddr</code> representing the instance of such prototype. You might wonder, if that is true, then <code class="highlighter-rouge">this</code> will only be able to refer to a single set of all <em>actual</em> instances, rather than differentiating them according to the construction site. Well, by recency abstraction, there is actually a trade-off here between efficiency and precision.</li>
+    </ul>
+  </li>
+</ul>
 
 <h2 id="a-new-idea">A new idea</h2>
 <p>Now I am considering another dimension of design to solve the efficiency and state binding problem.</p>
 
-<h2 id="todo-in-next-issue">TODO in next issue</h2>
+<p>There are several problems of the full SMT based solution</p>
 
-<ul>
-  <li>Recency abstraction in SAFE</li>
-</ul>
+<ol>
+  <li>Slow</li>
+  <li>The state maintenance is hairy, albeit necessary to support a high level of expressivity</li>
+</ol>
+
+<p>However, some of the specification are <em>apparently</em> simple, which means that the state transformer underlying the specification can be directly encoded in static analyzer. In fact, by composing the abstract interpretations of operations, we can compose them without user’s intervention.</p>
+
+<p>Interestingly, we still need to do the <em>domain probing</em> when the expression might be too complex to invert, and need to fall back to the SMT solver when an abstract boolean evaluation can’t work at all (consider <code class="highlighter-rouge">if ... then ... else</code>).</p>
+
+<p>Anyway, this is an interesting direction worth exploring.</p>
 
   </div>
 

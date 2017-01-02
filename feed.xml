@@ -6,8 +6,8 @@
 </description>
     <link>http://xWIDL.github.io/</link>
     <atom:link href="http://xWIDL.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 02 Jan 2017 14:23:19 +0800</pubDate>
-    <lastBuildDate>Mon, 02 Jan 2017 14:23:19 +0800</lastBuildDate>
+    <pubDate>Mon, 02 Jan 2017 15:00:56 +0800</pubDate>
+    <lastBuildDate>Mon, 02 Jan 2017 15:00:56 +0800</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
     
       <item>
@@ -45,16 +45,64 @@
   &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2 id=&quot;oop-in-safe&quot;&gt;OOP in SAFE&lt;/h2&gt;
+&lt;h2 id=&quot;oo-in-safe&quot;&gt;OO in SAFE&lt;/h2&gt;
+&lt;p&gt;JS is an prototype-based OO language. This is also crucial to our modeling.&lt;/p&gt;
+
+&lt;p&gt;Let’s consider some examples first.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;var x = new ClsX();&lt;/code&gt; will be compiled to SAFE intermediate repr (using &lt;code class=&quot;highlighter-rouge&quot;&gt;cfgBuild&lt;/code&gt; flag):&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;&amp;gt;fun&amp;lt;&amp;gt;1 := @ToObject(ClsX) @ #1
+&amp;lt;&amp;gt;arguments&amp;lt;&amp;gt;2 := allocArg(0) @ #2
+&amp;lt;&amp;gt;proto&amp;lt;&amp;gt;3 := &amp;lt;&amp;gt;fun&amp;lt;&amp;gt;1[&quot;prototype&quot;]
+&amp;lt;&amp;gt;obj&amp;lt;&amp;gt;4 := alloc(&amp;lt;&amp;gt;proto&amp;lt;&amp;gt;3) @ #3
+construct(&amp;lt;&amp;gt;fun&amp;lt;&amp;gt;1, &amp;lt;&amp;gt;obj&amp;lt;&amp;gt;4, &amp;lt;&amp;gt;arguments&amp;lt;&amp;gt;2) @ #4
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;A more readable version is&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;fClsX       := @ToObject(ClsX)
+args        := allocArg(0)
+protoClsX   := fClsX.prototype
+obj         := alloc(protoClsX)
+
+construct(fClsX, obj, args)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Assuming you understand the prototype-based OO mechanism in JS, let’s investigate into the following issues directly:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Where does &lt;code class=&quot;highlighter-rouge&quot;&gt;ClsX&lt;/code&gt; exist? How to create it? (Since it looks global), how to load it into the default global environment?
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;@ToObject&lt;/code&gt; is an internal API call (&lt;code class=&quot;highlighter-rouge&quot;&gt;IC&lt;/code&gt;), whose expression argument will be first forwarded to e&lt;code class=&quot;highlighter-rouge&quot;&gt;V&lt;/code&gt;aluate and then try to coerce it to &lt;code class=&quot;highlighter-rouge&quot;&gt;AbsObject&lt;/code&gt;&lt;/li&gt;
+      &lt;li&gt;Since is a &lt;em&gt;function&lt;/em&gt; object, we create it with &lt;code class=&quot;highlighter-rouge&quot;&gt;FuncModel&lt;/code&gt;, which has a member called &lt;code class=&quot;highlighter-rouge&quot;&gt;protoModel&lt;/code&gt; and a member called &lt;code class=&quot;highlighter-rouge&quot;&gt;construct&lt;/code&gt;. We need to provide both&lt;/li&gt;
+      &lt;li&gt;To load it, just modify the value of &lt;code class=&quot;highlighter-rouge&quot;&gt;BuiltInGlobal&lt;/code&gt; object&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;How is &lt;code class=&quot;highlighter-rouge&quot;&gt;prototype&lt;/code&gt; created? How is it bound to the (constructor) function?
+    &lt;ul&gt;
+      &lt;li&gt;Prototype is also an object, but with an emphasize on OO, we will consider how can its operations manipulate the &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; state. This is done by a &lt;code class=&quot;highlighter-rouge&quot;&gt;SystemAddr&lt;/code&gt; representing the instance of such prototype. You might wonder, if that is true, then &lt;code class=&quot;highlighter-rouge&quot;&gt;this&lt;/code&gt; will only be able to refer to a single set of all &lt;em&gt;actual&lt;/em&gt; instances, rather than differentiating them according to the construction site. Well, by recency abstraction, there is actually a trade-off here between efficiency and precision.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h2 id=&quot;a-new-idea&quot;&gt;A new idea&lt;/h2&gt;
 &lt;p&gt;Now I am considering another dimension of design to solve the efficiency and state binding problem.&lt;/p&gt;
 
-&lt;h2 id=&quot;todo-in-next-issue&quot;&gt;TODO in next issue&lt;/h2&gt;
+&lt;p&gt;There are several problems of the full SMT based solution&lt;/p&gt;
 
-&lt;ul&gt;
-  &lt;li&gt;Recency abstraction in SAFE&lt;/li&gt;
-&lt;/ul&gt;
+&lt;ol&gt;
+  &lt;li&gt;Slow&lt;/li&gt;
+  &lt;li&gt;The state maintenance is hairy, albeit necessary to support a high level of expressivity&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;However, some of the specification are &lt;em&gt;apparently&lt;/em&gt; simple, which means that the state transformer underlying the specification can be directly encoded in static analyzer. In fact, by composing the abstract interpretations of operations, we can compose them without user’s intervention.&lt;/p&gt;
+
+&lt;p&gt;Interestingly, we still need to do the &lt;em&gt;domain probing&lt;/em&gt; when the expression might be too complex to invert, and need to fall back to the SMT solver when an abstract boolean evaluation can’t work at all (consider &lt;code class=&quot;highlighter-rouge&quot;&gt;if ... then ... else&lt;/code&gt;).&lt;/p&gt;
+
+&lt;p&gt;Anyway, this is an interesting direction worth exploring.&lt;/p&gt;
 </description>
         <pubDate>Mon, 02 Jan 2017 00:00:00 +0800</pubDate>
         <link>http://xWIDL.github.io/2017/01/02/progress-ii.html</link>
