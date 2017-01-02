@@ -6,8 +6,8 @@
 </description>
     <link>http://xWIDL.github.io/</link>
     <atom:link href="http://xWIDL.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 02 Jan 2017 15:00:56 +0800</pubDate>
-    <lastBuildDate>Mon, 02 Jan 2017 15:00:56 +0800</lastBuildDate>
+    <pubDate>Mon, 02 Jan 2017 21:53:31 +0800</pubDate>
+    <lastBuildDate>Mon, 02 Jan 2017 21:53:31 +0800</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
     
       <item>
@@ -272,17 +272,9 @@ Pos     Zero    Neg
 
 &lt;h2 id=&quot;winterhack-milestone&quot;&gt;WinterHack Milestone&lt;/h2&gt;
 
-&lt;p&gt;From chat history in Dec. 21st:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;具体的坑很多：Scala 到 Z3 定理求解器的绑定，WebIDL 的 parser 等。。。SAFE 本身也有很多改进空间，比如他有一个 debugger（可以想象成 abstract interpreter’s debugger ….），但是只能按数据流的一次更新作为一步，不能像正常的 debugger 一样细粒度地步进&lt;/li&gt;
-  &lt;li&gt;抽象一点的问题，比如如何根据函数规范（有无副作用？）设计计算代价不同的验证条件（最简单的 函数类型签名部分我已经做完了）。。。。&lt;/li&gt;
-  &lt;li&gt;还有一个鬼畜的主意是直接把 JS 全文翻译到 dafny — 但是 JS 是动态、高阶的，自带反射加成&lt;/li&gt;
-  &lt;li&gt;这种静态低阶 OO 语言和动态高阶 OO 语言之间的语义映射是一个有趣的问题&lt;/li&gt;
-&lt;/ul&gt;
-
 &lt;p&gt;&lt;img src=&quot;http://xWIDL.github.io/assets/arch.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
+&lt;p&gt;&lt;a href=&quot;https://github.com/xWIDL/safe/milestone/1&quot;&gt;https://github.com/xWIDL/safe/milestone/1&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Fri, 11 Nov 2016 00:00:00 +0800</pubDate>
         <link>http://xWIDL.github.io/2016/11/11/roadmap.html</link>
